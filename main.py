@@ -9,6 +9,12 @@ from machine import Pin,SPI
 import framebuf
 import time
 
+DC = 8
+RST = 12
+MOSI = 11
+SCK = 10
+CS = 9
+
 
 
 class OLED_1inch3(framebuf.FrameBuffer):
@@ -32,7 +38,7 @@ class OLED_1inch3(framebuf.FrameBuffer):
         self.init_display()
         
         self.white =   0xffff
-        self.black =   0x0000
+        self.balck =   0x0000
         
     def write_cmd(self, cmd):
         self.cs(1)
@@ -106,14 +112,12 @@ class OLED_1inch3(framebuf.FrameBuffer):
             self.write_cmd(0x10 + (self.column >> 4))
             for num in range(0,16):
                 self.write_data(self.buffer[page*16+num])
+                
 
 
-DC = 8
-RST = 12
-MOSI = 11
-SCK = 10
-CS = 9
 OLED = OLED_1inch3()
+OLED.fill(0x0000) 
+OLED.show()
 
 
 def chat_gpt(ssid, password, endpoint, api_key, model, prompt, max_tokens):
@@ -121,6 +125,7 @@ def chat_gpt(ssid, password, endpoint, api_key, model, prompt, max_tokens):
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         wlan.connect(ssid, password)
+        
 
         # Wait for connect or fail
         max_wait = 10
@@ -161,7 +166,9 @@ def chat_gpt(ssid, password, endpoint, api_key, model, prompt, max_tokens):
             print("Success")
             response_data = json.loads(r.text)
             completion = response_data["choices"][0]["message"]["content"]
-            OLED.text(completion,0,28,OLED.black)
+            #OLED.text(completion)
+            OLED.text(completion,1,2,OLED.white)
+            OLED.show()
             print(completion)
         r.close()
 
@@ -172,6 +179,3 @@ chat_gpt(constants.INTERNET_NAME,
          "gpt-4o-mini",
          "Tell me my fortune in the style of a chinese fortune cookie.",
          200)
-
-
-
