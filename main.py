@@ -48,7 +48,7 @@ def chat_gpt(ssid, password, endpoint, api_key, model, prompt, max_tokens):
         else:
             print("Success")
             response_data = json.loads(r.text)
-            completion = response_data["choices"][0]["text"]
+            completion = response_data["choices"][0]["message"]["content"]
             print(completion)
         r.close()
 
