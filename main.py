@@ -17,11 +17,11 @@ CS = 9
 
 
 
+
 class OLED_1inch3(framebuf.FrameBuffer):
     def __init__(self):
         self.width = 128
         self.height = 64
-        
         self.rotate = 180 #only 0 and 180 
         
         self.cs = Pin(CS,Pin.OUT)
@@ -112,12 +112,55 @@ class OLED_1inch3(framebuf.FrameBuffer):
             self.write_cmd(0x10 + (self.column >> 4))
             for num in range(0,16):
                 self.write_data(self.buffer[page*16+num])
-                
+
+def wrap_text(text, max_width):
+    """Wrap text to a given width."""
+    words = text.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        if len(current_line) + len(word) + 1 <= max_width:
+            if current_line:
+                current_line += " "
+            current_line += word
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    # Append the last line if there is any content left
+    if current_line:
+        lines.append(current_line)
+
+    return lines
+
+def display_text(text, max_width=128):
+    """Display wrapped text on the screen."""
+    lines = wrap_text(text, max_width // 8)  # Calculate max characters per line
+    oled.fill(0)  # Clear display
+    y = 0
+
+    for line in lines:
+        oled.text(line, 0, y)  # Draw text on the display
+        y += 10  # Move to next line (assuming 10-pixel height font)
+
+        # Break if the screen is full
+        if y >= oled_height:
+            break
+
+    oled.show()  # Update the display
+
+# Initialize the display (SSD1306 with a 128x64 display)
+oled_width = 128
+oled_height = 64
+oled = OLED_1inch3()
 
 
-OLED = OLED_1inch3()
-OLED.fill(0x0000) 
-OLED.show()
+
+
+#OLED1 = OLED_1inch3()
+#OLED1.fill(0x0000) 
+#OLED1.show()
 
 
 def chat_gpt(ssid, password, endpoint, api_key, model, prompt, max_tokens):
@@ -167,8 +210,10 @@ def chat_gpt(ssid, password, endpoint, api_key, model, prompt, max_tokens):
             response_data = json.loads(r.text)
             completion = response_data["choices"][0]["message"]["content"]
             #OLED.text(completion)
-            OLED.text(completion,1,2,OLED.white)
-            OLED.show()
+            #OLED.text(completion,1,2,OLED.white)
+            #OLED.show()
+            display_text(completion)
+            
             print(completion)
         r.close()
 
